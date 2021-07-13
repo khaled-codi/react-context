@@ -3,7 +3,7 @@ import SessionContext from './SessionContext';
 import { setCookie, getCookie, removeCookie } from '../../cookies';
 import { toast } from 'react-toastify';
 
-export default function PackageProvider({ children }) {
+export default function SessionProvider({ children }) {
 
     const [session, setValue] = useState({
         user: {
