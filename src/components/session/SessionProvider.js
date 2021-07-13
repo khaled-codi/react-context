@@ -17,18 +17,6 @@ export default function PackageProvider({ children }) {
         setValue(value);
     }
 
-    function initializeSession() {
-        let token = getCookie('token');
-        if (token) fetch('https://reqres.in/api/users/4', {
-            headers: {
-                'token': token
-            }
-        }).then(res => res.json()).then(res => {
-            let user = { ...res.data, token };
-            updateSession({ user });
-        });
-    }
-
     async function login({ email, password }) {
 
         // try to login
@@ -63,6 +51,17 @@ export default function PackageProvider({ children }) {
     }
 
     useEffect(() => {
+        function initializeSession() {
+            let token = getCookie('token');
+            if (token) fetch('https://reqres.in/api/users/4', {
+                headers: {
+                    'token': token
+                }
+            }).then(res => res.json()).then(res => {
+                let user = { ...res.data, token };
+                updateSession({ user });
+            });
+        }
         initializeSession();
     }, []);
 
