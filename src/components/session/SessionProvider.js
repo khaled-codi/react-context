@@ -11,6 +11,22 @@ export default function SessionProvider({ children }) {
         }
     });
 
+    useEffect(() => {
+        function initializeSession() {
+            let id = getCookie('id');
+            let token = getCookie('token');
+            if (token) fetch(`https://reqres.in/api/users/${id}`, {
+                headers: {
+                    'token': token
+                }
+            }).then(res => res.json()).then(res => {
+                let user = { ...res.data, token };
+                updateSession({ user });
+            });
+        }
+        initializeSession();
+    }, []);
+
     function updateSession(nextSession) {
         let value = typeof nextSession === "function" ?
             nextSession : prevSession => ({ ...prevSession, ...nextSession });
@@ -20,7 +36,7 @@ export default function SessionProvider({ children }) {
     async function login({ email, password }) {
 
         // try to login
-        let { error, token } = await fetch('https://reqres.in/api/login', {
+        let { error, id = 4, token } = await fetch('https://reqres.in/api/login', {
             method: "post",
             headers: {
                 'Content-type': 'application/json'
@@ -32,7 +48,7 @@ export default function SessionProvider({ children }) {
         if (error || !token) return toast.error(error);
 
         // get the data of the loggedin user
-        let result = await fetch('https://reqres.in/api/users/4', {
+        let result = await fetch(`https://reqres.in/api/users/${id}`, {
             headers: {
                 'token': token
             }
@@ -40,6 +56,7 @@ export default function SessionProvider({ children }) {
 
         let user = { ...result.data, token };
 
+        setCookie('id', id);
         setCookie('token', token);
         updateSession({ user });
         toast(`Welcome ${user.first_name}!`);
@@ -47,23 +64,9 @@ export default function SessionProvider({ children }) {
 
     function logout() {
         updateSession({ user: { token: null } });
+        removeCookie('id');
         removeCookie('token');
     }
-
-    useEffect(() => {
-        function initializeSession() {
-            let token = getCookie('token');
-            if (token) fetch('https://reqres.in/api/users/4', {
-                headers: {
-                    'token': token
-                }
-            }).then(res => res.json()).then(res => {
-                let user = { ...res.data, token };
-                updateSession({ user });
-            });
-        }
-        initializeSession();
-    }, []);
 
     const context = {
         session,
